@@ -1,8 +1,18 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="テニスの上達メモから今日意識することを選んでプレー前に確認。プレー後は○△×で記録して上達をふり返れるアプリ。記録は各自の端末だけに保存されます。">
 <title>テニス上達チェック</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
 <style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+[hidden]{display:none!important}
+
 /* Layout: ハードコート色の帯ヘッダー＋1カラムのチェックリスト。下部固定タブで「チェック／記録／分析」 */
 :root{
   --court:#2f5d8a;      /* ハードコートの青 */
@@ -28,7 +38,7 @@
   --bg:#10171e;--surface:#18222c;--fg:#e4ebf1;--muted:#93a4b3;--rule:#2a3845;
   --ok:#3fb67f;--mid:#e0a63a;--ng:#e4685f;--chip:#22303c;color-scheme:dark}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--fg);font-family:var(--f-jp);font-size:15px;line-height:1.55;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-jp);font-size:18.0px;line-height:1.55;-webkit-tap-highlight-color:transparent}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--court)}
 .wrap{max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 header{background:var(--court);color:#fff;position:relative;overflow:hidden}
@@ -37,19 +47,19 @@ header .wrap{padding-block:14px 16px;position:relative}
 header::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;background:rgba(255,255,255,.18)}
 header::before{content:"";position:absolute;left:0;right:0;top:62%;height:2px;background:rgba(255,255,255,.18)}
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:8px;position:relative;z-index:1}
-.privacy{position:relative;z-index:1;margin-top:10px;font-size:12px;line-height:1.5;background:rgba(0,0,0,.22);border-radius:8px;padding:6px 10px}
-.back{color:#fff;text-decoration:none;font-size:13px;opacity:.85}
-.date{font-family:var(--f-num);font-size:15px;letter-spacing:.06em;opacity:.9}
-h1{margin:6px 0 2px;font-size:22px;font-weight:700;letter-spacing:.04em;position:relative;z-index:1;text-wrap:balance}
-.sub{font-size:12.5px;opacity:.85;position:relative;z-index:1}
-main{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+.privacy{position:relative;z-index:1;margin-top:10px;font-size:14.5px;line-height:1.5;background:rgba(0,0,0,.22);border-radius:8px;padding:6px 10px}
+.back{color:#fff;text-decoration:none;font-size:15.5px;opacity:.85}
+.date{font-family:var(--f-num);font-size:18.0px;letter-spacing:.06em;opacity:.9}
+h1{margin:6px 0 2px;font-size:26.5px;font-weight:700;letter-spacing:.04em;position:relative;z-index:1;text-wrap:balance}
+.sub{font-size:15.0px;opacity:.85;position:relative;z-index:1}
+main{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 section.view{padding-block:14px}
-.label{font-size:11.5px;letter-spacing:.12em;color:var(--muted);font-weight:700;margin:18px 0 8px}
+.label{font-size:14.0px;letter-spacing:.12em;color:var(--muted);font-weight:700;margin:18px 0 8px}
 .label:first-child{margin-top:4px}
 
 /* 基本の5か条 */
 .core{background:var(--court-deep);color:#fff;border-radius:12px;padding:12px 14px;display:grid;gap:8px}
-.core h2{margin:0;font-size:14px;letter-spacing:.06em;display:flex;align-items:center;gap:8px}
+.core h2{margin:0;font-size:17.0px;letter-spacing:.06em;display:flex;align-items:center;gap:8px}
 .core h2 i{width:12px;height:12px;border-radius:50%;background:var(--ball);display:inline-block;box-shadow:inset -2px -2px 0 rgba(0,0,0,.15)}
 
 /* モード・カテゴリ */
@@ -57,28 +67,29 @@ section.view{padding-block:14px}
 .seg button{flex:1;border:0;background:transparent;color:var(--muted);font:inherit;font-weight:700;padding:8px;border-radius:8px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,.12)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{border:1px solid var(--rule);background:var(--surface);color:var(--fg);font:inherit;font-size:13.5px;padding:6px 12px;border-radius:999px;cursor:pointer}
+.chip{border:1px solid var(--rule);background:var(--surface);color:var(--fg);font:inherit;font-size:16.0px;padding:6px 12px;border-radius:999px;cursor:pointer}
 .chip[aria-pressed="true"]{background:var(--court);border-color:var(--court);color:#fff}
-.chip .n{font-family:var(--f-num);font-size:13px;opacity:.75;margin-left:4px}
+.chip .n{font-family:var(--f-num);font-size:15.5px;opacity:.75;margin-left:4px}
 
 /* 今日のテーマ */
-.focus{border:2px dashed var(--rule);border-radius:12px;padding:10px 12px;font-size:14px}
+.focus{border:2px dashed var(--rule);border-radius:12px;padding:10px 12px;font-size:17.0px}
 .focus.has{border-style:solid;border-color:var(--ball);background:color-mix(in srgb,var(--ball) 10%,var(--surface))}
 .focus ol{margin:4px 0 0;padding-left:1.3em}
-.focus p{margin:0;color:var(--muted);font-size:13px}
+.focus p{margin:0;color:var(--muted);font-size:15.5px}
 
 /* チェック項目 */
 .group{margin-top:6px}
-.group h3{font-size:15px;margin:18px 0 6px;display:flex;align-items:baseline;gap:8px}
-.group h3 small{font-family:var(--f-num);color:var(--muted);font-weight:500;font-size:14px}
+.group h3{font-size:18.0px;margin:18px 0 6px;display:flex;align-items:baseline;gap:8px}
+.group h3 small{font-family:var(--f-num);color:var(--muted);font-weight:500;font-size:17.0px}
 .item{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:10px 10px 10px 12px;display:grid;grid-template-columns:1fr auto;gap:6px 8px;align-items:center;margin-bottom:6px}
 .item.core-item{border-left:4px solid var(--ball)}
-.item .t{font-weight:700;font-size:14.5px;min-width:0}
-.item .h{grid-column:1/-1;font-size:12.5px;color:var(--muted);margin-top:-2px}
-.item .star{border:0;background:none;font-size:18px;line-height:1;cursor:pointer;color:var(--rule);padding:2px 4px}
-.item .star[aria-pressed="true"]{color:var(--mid)}
+.item .t{font-weight:700;font-size:17.5px;min-width:0}
+.item .h{grid-column:1/-1;font-size:15.0px;color:var(--muted);margin-top:-2px}
+.item .star{border:1.5px solid var(--mid);background:var(--surface);color:var(--mid);font:inherit;font-size:14.5px;font-weight:700;line-height:1;cursor:pointer;padding:7px 10px;border-radius:999px;white-space:nowrap;align-self:start}
+.item .star b{font-size:18px;vertical-align:-2px;margin-right:2px}
+.item .star[aria-pressed="true"]{background:var(--mid);color:#fff}
 .rate{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.rate button{border:1px solid var(--rule);background:var(--bg);color:var(--muted);font:inherit;font-size:13px;font-weight:700;padding:7px 0;border-radius:8px;cursor:pointer}
+.rate button{border:1px solid var(--rule);background:var(--bg);color:var(--muted);font:inherit;min-height:44px;font-size:15.5px;font-weight:700;padding:7px 0;border-radius:8px;cursor:pointer}
 .rate button[data-v="2"][aria-pressed="true"]{background:var(--ok);border-color:var(--ok);color:#fff}
 .rate button[data-v="1"][aria-pressed="true"]{background:var(--mid);border-color:var(--mid);color:#fff}
 .rate button[data-v="0"][aria-pressed="true"]{background:var(--ng);border-color:var(--ng);color:#fff}
@@ -86,9 +97,9 @@ section.view{padding-block:14px}
 /* 保存 */
 .savebox{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:12px;display:grid;gap:10px;margin-top:16px}
 .savebox textarea{width:100%;min-height:64px;border:1px solid var(--rule);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit;padding:8px}
-.summary{display:flex;gap:14px;font-size:13px;color:var(--muted);flex-wrap:wrap}
-.summary b{font-family:var(--f-num);font-size:20px;color:var(--fg);margin-right:2px}
-.btn{border:0;background:var(--court);color:#fff;font:inherit;font-weight:700;padding:12px;border-radius:10px;cursor:pointer;font-size:15px}
+.summary{display:flex;gap:14px;font-size:15.5px;color:var(--muted);flex-wrap:wrap}
+.summary b{font-family:var(--f-num);font-size:24.0px;color:var(--fg);margin-right:2px}
+.btn{border:0;background:var(--court);color:#fff;font:inherit;font-weight:700;padding:12px;border-radius:10px;cursor:pointer;font-size:18.0px}
 .btn.ghost{background:var(--chip);color:var(--fg)}
 .btn.danger{background:var(--ng)}
 .btn:disabled{opacity:.45}
@@ -98,30 +109,30 @@ section.view{padding-block:14px}
 /* 記録 */
 .rec{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:10px 12px;margin-bottom:8px}
 .rec-head{display:flex;align-items:center;gap:10px}
-.rec-score{font-family:var(--f-num);font-size:28px;font-weight:700;min-width:58px;line-height:1}
-.rec-score small{font-size:14px;font-weight:500;color:var(--muted)}
-.rec-meta{flex:1;min-width:0;font-size:13px}
-.rec-meta .d{font-family:var(--f-num);font-size:16px;font-weight:700}
-.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;background:var(--chip);color:var(--muted);margin-left:4px}
+.rec-score{font-family:var(--f-num);font-size:33.5px;font-weight:700;min-width:58px;line-height:1}
+.rec-score small{font-size:17.0px;font-weight:500;color:var(--muted)}
+.rec-meta{flex:1;min-width:0;font-size:15.5px}
+.rec-meta .d{font-family:var(--f-num);font-size:19.0px;font-weight:700}
+.tag{display:inline-block;font-size:13.0px;padding:1px 7px;border-radius:999px;background:var(--chip);color:var(--muted);margin-left:4px}
 .tag.match{background:var(--court);color:#fff}
-.rec details{margin-top:6px;font-size:13px}
+.rec details{margin-top:6px;font-size:15.5px}
 .rec summary{cursor:pointer;color:var(--muted)}
 .rec ul{margin:6px 0;padding-left:1.1em}
 .rec .memo{white-space:pre-wrap;background:var(--bg);padding:6px 8px;border-radius:6px;margin-top:6px}
 .mk2{color:var(--ok)}.mk1{color:var(--mid)}.mk0{color:var(--ng)}
-.del{border:0;background:none;color:var(--muted);font:inherit;font-size:12px;cursor:pointer;text-decoration:underline}
-.empty{text-align:center;color:var(--muted);padding:28px 12px;border:2px dashed var(--rule);border-radius:12px;font-size:14px}
+.del{border:0;background:none;color:var(--muted);font:inherit;font-size:14.5px;cursor:pointer;text-decoration:underline}
+.empty{text-align:center;color:var(--muted);padding:28px 12px;border:2px dashed var(--rule);border-radius:12px;font-size:17.0px}
 
 /* 分析 */
 .trend{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:12px}
-.bars{display:flex;align-items:flex-end;gap:4px;height:120px;border-bottom:1px solid var(--rule);background:linear-gradient(var(--rule) 1px,transparent 1px) 0 0/100% 50%}
+.bars{display:flex;align-items:flex-end;gap:4px;height:140px;border-bottom:1px solid var(--rule);background:linear-gradient(var(--rule) 1px,transparent 1px) 0 0/100% 50%}
 .bars div{flex:1;background:var(--court);border-radius:3px 3px 0 0;min-height:2px;position:relative}
 .bars div:last-child{background:var(--ok)}
-.axis{display:flex;justify-content:space-between;font-family:var(--f-num);font-size:12px;color:var(--muted);margin-top:4px}
-.stat{display:grid;grid-template-columns:1fr 52px;gap:4px 10px;align-items:center;background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:9px 12px;margin-bottom:6px}
-.stat .nm{font-size:13.5px;font-weight:700;min-width:0}
-.stat .nm small{display:block;font-weight:400;color:var(--muted);font-size:11.5px}
-.stat .pc{font-family:var(--f-num);font-size:20px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.axis{display:flex;justify-content:space-between;font-family:var(--f-num);font-size:14.5px;color:var(--muted);margin-top:4px}
+.stat{display:grid;grid-template-columns:1fr 64px;gap:4px 10px;align-items:center;background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:9px 12px;margin-bottom:6px}
+.stat .nm{font-size:16.0px;font-weight:700;min-width:0}
+.stat .nm small{display:block;font-weight:400;color:var(--muted);font-size:14.0px}
+.stat .pc{font-family:var(--f-num);font-size:24.0px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
 .meter{grid-column:1/-1;height:6px;background:var(--chip);border-radius:3px;overflow:hidden}
 .meter i{display:block;height:100%}
 .io textarea{width:100%;min-height:90px;border:1px solid var(--rule);border-radius:8px;background:var(--bg);color:var(--fg);font:12px/1.4 ui-monospace,monospace;padding:8px}
@@ -129,16 +140,17 @@ section.view{padding-block:14px}
 /* 下部タブ */
 nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--rule);padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
 nav.tabs .wrap{display:grid;grid-template-columns:repeat(3,1fr)}
-nav.tabs button{border:0;background:none;font:inherit;font-size:12px;color:var(--muted);padding:9px 0 10px;cursor:pointer;display:grid;justify-items:center;gap:2px}
-nav.tabs button b{font-size:15px}
+nav.tabs button{border:0;background:none;font:inherit;font-size:14.5px;color:var(--muted);padding:9px 0 10px;cursor:pointer;display:grid;justify-items:center;gap:2px}
+nav.tabs button b{font-size:18.0px}
 nav.tabs button[aria-selected="true"]{color:var(--court)}
 :root[data-theme="dark"] nav.tabs button[aria-selected="true"]{color:var(--ball)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) nav.tabs button[aria-selected="true"]{color:var(--ball)}}
-.toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 16px;border-radius:999px;font-size:13px;z-index:20}
-.confirm{background:color-mix(in srgb,var(--ng) 10%,var(--surface));border:1px solid var(--ng);border-radius:8px;padding:8px;margin-top:6px;font-size:13px;display:grid;gap:6px}
+.toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 16px;border-radius:999px;font-size:15.5px;z-index:20}
+.confirm{background:color-mix(in srgb,var(--ng) 10%,var(--surface));border:1px solid var(--ng);border-radius:8px;padding:8px;margin-top:6px;font-size:15.5px;display:grid;gap:6px}
 @media (prefers-reduced-motion:no-preference){.rate button,.chip,.star{transition:background .15s,color .15s}}
 </style>
-
+</head>
+<body>
 <header>
   <div class="wrap">
     <div class="topbar">
@@ -170,10 +182,10 @@ nav.tabs button[aria-selected="true"]{color:var(--court)}
 
     <div class="savebox">
       <div class="summary" id="sum"></div>
-      <label for="memo" style="font-size:13px;color:var(--muted)">気づき・コーチの一言</label>
+      <label for="memo" style="font-size:15.5px;color:var(--muted)">気づき・コーチの一言</label>
       <textarea id="memo" placeholder="例：フォアはネット通過でテイクバック完了できた。サーブはトスが後ろに流れがち"></textarea>
       <button class="btn" id="saveBtn" type="button">今日の記録を保存</button>
-      <div style="font-size:12px;color:var(--muted);text-align:center">この端末のブラウザにだけ保存されます（ほかの人には見えません）</div>
+      <div style="font-size:14.5px;color:var(--muted);text-align:center">この端末のブラウザにだけ保存されます（ほかの人には見えません）</div>
       <button class="btn ghost" id="resetBtn" type="button">評価をクリア</button>
     </div>
   </section>
@@ -189,7 +201,7 @@ nav.tabs button[aria-selected="true"]{color:var(--court)}
     <div id="statsBody"></div>
     <div class="label">バックアップ</div>
     <div class="io savebox">
-      <div style="font-size:13px;color:var(--muted)">記録はこの端末のブラウザの中だけに保存され、サーバーに送信されたり、ほかの人と共有されたりすることはありません。そのため、別の端末やブラウザからは見えません。機種変更やブラウザのデータ削除で消えるので、ときどき「記録をコピー」で保管してください。</div>
+      <div style="font-size:15.5px;color:var(--muted)">記録はこの端末のブラウザの中だけに保存され、サーバーに送信されたり、ほかの人と共有されたりすることはありません。そのため、別の端末やブラウザからは見えません。機種変更やブラウザのデータ削除で消えるので、ときどき「記録をコピー」で保管してください。</div>
       <div class="row">
         <button class="btn ghost" id="expBtn" type="button">記録をコピー</button>
         <button class="btn ghost" id="impBtn" type="button">貼り付けて復元</button>
@@ -296,7 +308,7 @@ function itemHTML(it,isCore){
   const r=D().ratings[it.id], f=D().focus.includes(it.id);
   return `<div class="item${isCore?" core-item":""}" data-id="${it.id}">
     <div class="t">${esc(it.t)}</div>
-    <button type="button" class="star" aria-label="今日のテーマにする" aria-pressed="${f}">${f?"★":"☆"}</button>
+    <button type="button" class="star" aria-label="今日のテーマにする" aria-pressed="${f}"><b>${f?"★":"☆"}</b>${f?"テーマ":"テーマに"}</button>
     <div class="h">${esc(it.h)}</div>
     <div class="rate">${[[2,"○ できた"],[1,"△ 少し"],[0,"× まだ"]].map(([v,l])=>`<button type="button" data-v="${v}" aria-pressed="${r===v}">${l}</button>`).join("")}</div>
   </div>`;
@@ -306,7 +318,7 @@ function renderCheck(){
   $("#catChips").innerHTML=CATS.map(c=>`<button type="button" class="chip" data-cat="${c.id}" aria-pressed="${D().cats.includes(c.id)}">${c.name}<span class="n">${c.items.length}</span></button>`).join("");
   const fb=$("#focusBox"), fl=D().focus.filter(id=>ITEM[id]);
   fb.className="focus"+(fl.length?" has":"");
-  fb.innerHTML=fl.length?`<ol>${fl.map(id=>`<li><b>${esc(ITEM[id].t)}</b> <span style="color:var(--muted);font-size:12px">${esc(ITEM[id].cat)}</span></li>`).join("")}</ol>`:`<p>下の項目の☆をタップすると、ここに今日意識することが並びます。</p>`;
+  fb.innerHTML=fl.length?`<ol>${fl.map(id=>`<li><b>${esc(ITEM[id].t)}</b> <span style="color:var(--muted);font-size:14px">${esc(ITEM[id].cat)}</span></li>`).join("")}</ol>`:`<p>下の項目の☆をタップすると、ここに今日意識することが並びます。</p>`;
   let html="";
   CATS.filter(c=>D().cats.includes(c.id)).forEach(c=>{html+=`<div class="group"><h3>${c.name} <small>${c.items.length}</small></h3>${c.items.map(i=>itemHTML(i,c.id==="core")).join("")}</div>`});
   if(!html)html=`<div class="empty" style="margin-top:14px">上のボタンから、チェックするジャンルを選んでください。</div>`;
@@ -367,7 +379,7 @@ function renderLog(){
         <div class="rec-meta"><span class="d">${l.date}</span><span class="tag${l.mode==="match"?" match":""}">${l.mode==="match"?"試合":"練習"}</span><br>
         <span class="mk2">○${by[0].length}</span>　<span class="mk1">△${by[1].length}</span>　<span class="mk0">×${by[2].length}</span></div>
       </div>
-      ${l.focus&&l.focus.length?`<div style="font-size:12.5px;margin-top:6px">★ ${l.focus.map(id=>esc(ITEM[id]?ITEM[id].t:"")+(l.ratings[id]!==undefined?` <span class="mk${l.ratings[id]}">${["×","△","○"][l.ratings[id]]}</span>`:"")).join("／")}</div>`:""}
+      ${l.focus&&l.focus.length?`<div style="font-size:15px;margin-top:6px">★ ${l.focus.map(id=>esc(ITEM[id]?ITEM[id].t:"")+(l.ratings[id]!==undefined?` <span class="mk${l.ratings[id]}">${["×","△","○"][l.ratings[id]]}</span>`:"")).join("／")}</div>`:""}
       ${l.memo?`<div class="memo">${esc(l.memo)}</div>`:""}
       <details><summary>項目ごとの評価</summary><ul>${li(by[2],0,"×")}${li(by[1],1,"△")}${li(by[0],2,"○")}</ul>
       <button type="button" class="del">この記録を削除</button></details>
@@ -433,3 +445,5 @@ $("#impBtn").addEventListener("click",()=>{
 
 renderCheck();renderLog();renderStats();
 </script>
+</body>
+</html>
