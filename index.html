@@ -154,18 +154,13 @@ nav.tabs button[aria-selected="true"]{color:var(--court)}
 <main class="wrap">
   <!-- チェック -->
   <section class="view" id="v-check">
-    <div class="core" id="coreBox">
-      <h2><i></i>どのショットでも、これだけは</h2>
-      <div id="coreList"></div>
-    </div>
-
     <div class="label">今日は</div>
     <div class="seg" id="modeSeg">
       <button type="button" data-mode="practice" aria-pressed="true">練習</button>
       <button type="button" data-mode="match" aria-pressed="false">試合</button>
     </div>
 
-    <div class="label">チェックするショット</div>
+    <div class="label">チェックするジャンル</div>
     <div class="chips" id="catChips"></div>
 
     <div class="label">今日のテーマ（☆で最大3つ）</div>
@@ -223,7 +218,7 @@ const CORE = [
 ];
 const CATS = [
   {id:"short",name:"ショートラリー",items:[
-    ["中指・人差し指・親指で軽く握る","ラケットの重みを感じる。指を働かせる"],
+    ["薬指・小指・親指で軽く握る","ラケットの重みを感じる。指を働かせる"],
     ["右足の位置で距離感を確認","毎回同じ打点に合わせる時間にする"],
     ["テイクバック小さく、ドッグパッドから","「前へならえ」のまま体をひねる"],
     ["ワイパースイングで山なりに","スイングスピードを落とし、一定のペースで"]
@@ -282,6 +277,7 @@ const CATS = [
 CATS.forEach(c=>c.items=c.items.map((x,i)=>({id:c.id+(i+1),t:x[0],h:x[1]})));
 const ITEM = {}; CORE.forEach(i=>ITEM[i.id]={...i,cat:"基本"});
 CATS.forEach(c=>c.items.forEach(i=>ITEM[i.id]={...i,cat:c.name,catId:c.id}));
+CATS.unshift({id:"core",name:"基本",items:CORE});CORE.forEach(i=>ITEM[i.id].catId="core");
 const CATNAME = Object.fromEntries(CATS.map(c=>[c.id,c.name]));
 
 const KEY="tennisCheck_v1";
@@ -306,21 +302,20 @@ function itemHTML(it,isCore){
   </div>`;
 }
 function renderCheck(){
-  $("#coreList").innerHTML="";
   document.querySelectorAll("#modeSeg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.mode===D().mode));
   $("#catChips").innerHTML=CATS.map(c=>`<button type="button" class="chip" data-cat="${c.id}" aria-pressed="${D().cats.includes(c.id)}">${c.name}<span class="n">${c.items.length}</span></button>`).join("");
   const fb=$("#focusBox"), fl=D().focus.filter(id=>ITEM[id]);
   fb.className="focus"+(fl.length?" has":"");
   fb.innerHTML=fl.length?`<ol>${fl.map(id=>`<li><b>${esc(ITEM[id].t)}</b> <span style="color:var(--muted);font-size:12px">${esc(ITEM[id].cat)}</span></li>`).join("")}</ol>`:`<p>下の項目の☆をタップすると、ここに今日意識することが並びます。</p>`;
-  let html=`<div class="group"><h3>基本 <small>${CORE.length}</small></h3>${CORE.map(i=>itemHTML(i,true)).join("")}</div>`;
-  CATS.filter(c=>D().cats.includes(c.id)).forEach(c=>{html+=`<div class="group"><h3>${c.name} <small>${c.items.length}</small></h3>${c.items.map(i=>itemHTML(i)).join("")}</div>`});
+  let html="";
+  CATS.filter(c=>D().cats.includes(c.id)).forEach(c=>{html+=`<div class="group"><h3>${c.name} <small>${c.items.length}</small></h3>${c.items.map(i=>itemHTML(i,c.id==="core")).join("")}</div>`});
+  if(!html)html=`<div class="empty" style="margin-top:14px">上のボタンから、チェックするジャンルを選んでください。</div>`;
   $("#groups").innerHTML=html;
   // コア5か条は上部にも簡潔に
-  $("#coreList").innerHTML=CORE.map(i=>`<div style="font-size:13.5px">・${esc(i.t)}</div>`).join("");
   $("#memo").value=D().memo||"";
   renderSum();
 }
-function visibleIds(){return [...CORE.map(i=>i.id),...CATS.filter(c=>D().cats.includes(c.id)).flatMap(c=>c.items.map(i=>i.id))]}
+function visibleIds(){return [...CATS.filter(c=>D().cats.includes(c.id)).flatMap(c=>c.items.map(i=>i.id))]}
 function renderSum(){
   const ids=visibleIds(), rated=ids.filter(id=>D().ratings[id]!==undefined);
   const c=[2,1,0].map(v=>rated.filter(id=>D().ratings[id]===v).length);
