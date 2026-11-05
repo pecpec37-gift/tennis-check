@@ -1,0 +1,440 @@
+<title>テニス上達チェック</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+/* Layout: ハードコート色の帯ヘッダー＋1カラムのチェックリスト。下部固定タブで「チェック／記録／分析」 */
+:root{
+  --court:#2f5d8a;      /* ハードコートの青 */
+  --court-deep:#1f4166;
+  --line:#ffffff;
+  --ball:#d9e021;       /* ボールの黄（強調のみ） */
+  --bg:#eef2f5;
+  --surface:#ffffff;
+  --fg:#1b2833;
+  --muted:#5d6e7c;
+  --rule:#d6dee5;
+  --ok:#1f8a5b; --mid:#c98a12; --ng:#c2413a;
+  --chip:#e2e9ef;
+  --f-jp:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",sans-serif;
+  --f-num:"Barlow Condensed","Arial Narrow",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --court:#244a70;--court-deep:#173352;--line:#e8eef3;--ball:#d4db2a;
+  --bg:#10171e;--surface:#18222c;--fg:#e4ebf1;--muted:#93a4b3;--rule:#2a3845;
+  --ok:#3fb67f;--mid:#e0a63a;--ng:#e4685f;--chip:#22303c;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --court:#244a70;--court-deep:#173352;--line:#e8eef3;--ball:#d4db2a;
+  --bg:#10171e;--surface:#18222c;--fg:#e4ebf1;--muted:#93a4b3;--rule:#2a3845;
+  --ok:#3fb67f;--mid:#e0a63a;--ng:#e4685f;--chip:#22303c;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-jp);font-size:15px;line-height:1.55;-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--court)}
+.wrap{max-width:640px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{background:var(--court);color:#fff;position:relative;overflow:hidden}
+header .wrap{padding-block:14px 16px;position:relative}
+/* コートのライン */
+header::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;background:rgba(255,255,255,.18)}
+header::before{content:"";position:absolute;left:0;right:0;top:62%;height:2px;background:rgba(255,255,255,.18)}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:8px;position:relative;z-index:1}
+.privacy{position:relative;z-index:1;margin-top:10px;font-size:12px;line-height:1.5;background:rgba(0,0,0,.22);border-radius:8px;padding:6px 10px}
+.back{color:#fff;text-decoration:none;font-size:13px;opacity:.85}
+.date{font-family:var(--f-num);font-size:15px;letter-spacing:.06em;opacity:.9}
+h1{margin:6px 0 2px;font-size:22px;font-weight:700;letter-spacing:.04em;position:relative;z-index:1;text-wrap:balance}
+.sub{font-size:12.5px;opacity:.85;position:relative;z-index:1}
+main{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+section.view{padding-block:14px}
+.label{font-size:11.5px;letter-spacing:.12em;color:var(--muted);font-weight:700;margin:18px 0 8px}
+.label:first-child{margin-top:4px}
+
+/* 基本の5か条 */
+.core{background:var(--court-deep);color:#fff;border-radius:12px;padding:12px 14px;display:grid;gap:8px}
+.core h2{margin:0;font-size:14px;letter-spacing:.06em;display:flex;align-items:center;gap:8px}
+.core h2 i{width:12px;height:12px;border-radius:50%;background:var(--ball);display:inline-block;box-shadow:inset -2px -2px 0 rgba(0,0,0,.15)}
+
+/* モード・カテゴリ */
+.seg{display:flex;background:var(--chip);border-radius:10px;padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:transparent;color:var(--muted);font:inherit;font-weight:700;padding:8px;border-radius:8px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--rule);background:var(--surface);color:var(--fg);font:inherit;font-size:13.5px;padding:6px 12px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--court);border-color:var(--court);color:#fff}
+.chip .n{font-family:var(--f-num);font-size:13px;opacity:.75;margin-left:4px}
+
+/* 今日のテーマ */
+.focus{border:2px dashed var(--rule);border-radius:12px;padding:10px 12px;font-size:14px}
+.focus.has{border-style:solid;border-color:var(--ball);background:color-mix(in srgb,var(--ball) 10%,var(--surface))}
+.focus ol{margin:4px 0 0;padding-left:1.3em}
+.focus p{margin:0;color:var(--muted);font-size:13px}
+
+/* チェック項目 */
+.group{margin-top:6px}
+.group h3{font-size:15px;margin:18px 0 6px;display:flex;align-items:baseline;gap:8px}
+.group h3 small{font-family:var(--f-num);color:var(--muted);font-weight:500;font-size:14px}
+.item{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:10px 10px 10px 12px;display:grid;grid-template-columns:1fr auto;gap:6px 8px;align-items:center;margin-bottom:6px}
+.item.core-item{border-left:4px solid var(--ball)}
+.item .t{font-weight:700;font-size:14.5px;min-width:0}
+.item .h{grid-column:1/-1;font-size:12.5px;color:var(--muted);margin-top:-2px}
+.item .star{border:0;background:none;font-size:18px;line-height:1;cursor:pointer;color:var(--rule);padding:2px 4px}
+.item .star[aria-pressed="true"]{color:var(--mid)}
+.rate{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.rate button{border:1px solid var(--rule);background:var(--bg);color:var(--muted);font:inherit;font-size:13px;font-weight:700;padding:7px 0;border-radius:8px;cursor:pointer}
+.rate button[data-v="2"][aria-pressed="true"]{background:var(--ok);border-color:var(--ok);color:#fff}
+.rate button[data-v="1"][aria-pressed="true"]{background:var(--mid);border-color:var(--mid);color:#fff}
+.rate button[data-v="0"][aria-pressed="true"]{background:var(--ng);border-color:var(--ng);color:#fff}
+
+/* 保存 */
+.savebox{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:12px;display:grid;gap:10px;margin-top:16px}
+.savebox textarea{width:100%;min-height:64px;border:1px solid var(--rule);border-radius:8px;background:var(--bg);color:var(--fg);font:inherit;padding:8px}
+.summary{display:flex;gap:14px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.summary b{font-family:var(--f-num);font-size:20px;color:var(--fg);margin-right:2px}
+.btn{border:0;background:var(--court);color:#fff;font:inherit;font-weight:700;padding:12px;border-radius:10px;cursor:pointer;font-size:15px}
+.btn.ghost{background:var(--chip);color:var(--fg)}
+.btn.danger{background:var(--ng)}
+.btn:disabled{opacity:.45}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1}
+:focus-visible{outline:3px solid var(--ball);outline-offset:2px}
+
+/* 記録 */
+.rec{background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.rec-head{display:flex;align-items:center;gap:10px}
+.rec-score{font-family:var(--f-num);font-size:28px;font-weight:700;min-width:58px;line-height:1}
+.rec-score small{font-size:14px;font-weight:500;color:var(--muted)}
+.rec-meta{flex:1;min-width:0;font-size:13px}
+.rec-meta .d{font-family:var(--f-num);font-size:16px;font-weight:700}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;background:var(--chip);color:var(--muted);margin-left:4px}
+.tag.match{background:var(--court);color:#fff}
+.rec details{margin-top:6px;font-size:13px}
+.rec summary{cursor:pointer;color:var(--muted)}
+.rec ul{margin:6px 0;padding-left:1.1em}
+.rec .memo{white-space:pre-wrap;background:var(--bg);padding:6px 8px;border-radius:6px;margin-top:6px}
+.mk2{color:var(--ok)}.mk1{color:var(--mid)}.mk0{color:var(--ng)}
+.del{border:0;background:none;color:var(--muted);font:inherit;font-size:12px;cursor:pointer;text-decoration:underline}
+.empty{text-align:center;color:var(--muted);padding:28px 12px;border:2px dashed var(--rule);border-radius:12px;font-size:14px}
+
+/* 分析 */
+.trend{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:12px}
+.bars{display:flex;align-items:flex-end;gap:4px;height:120px;border-bottom:1px solid var(--rule);background:linear-gradient(var(--rule) 1px,transparent 1px) 0 0/100% 50%}
+.bars div{flex:1;background:var(--court);border-radius:3px 3px 0 0;min-height:2px;position:relative}
+.bars div:last-child{background:var(--ok)}
+.axis{display:flex;justify-content:space-between;font-family:var(--f-num);font-size:12px;color:var(--muted);margin-top:4px}
+.stat{display:grid;grid-template-columns:1fr 52px;gap:4px 10px;align-items:center;background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:9px 12px;margin-bottom:6px}
+.stat .nm{font-size:13.5px;font-weight:700;min-width:0}
+.stat .nm small{display:block;font-weight:400;color:var(--muted);font-size:11.5px}
+.stat .pc{font-family:var(--f-num);font-size:20px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.meter{grid-column:1/-1;height:6px;background:var(--chip);border-radius:3px;overflow:hidden}
+.meter i{display:block;height:100%}
+.io textarea{width:100%;min-height:90px;border:1px solid var(--rule);border-radius:8px;background:var(--bg);color:var(--fg);font:12px/1.4 ui-monospace,monospace;padding:8px}
+
+/* 下部タブ */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--rule);padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
+nav.tabs .wrap{display:grid;grid-template-columns:repeat(3,1fr)}
+nav.tabs button{border:0;background:none;font:inherit;font-size:12px;color:var(--muted);padding:9px 0 10px;cursor:pointer;display:grid;justify-items:center;gap:2px}
+nav.tabs button b{font-size:15px}
+nav.tabs button[aria-selected="true"]{color:var(--court)}
+:root[data-theme="dark"] nav.tabs button[aria-selected="true"]{color:var(--ball)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) nav.tabs button[aria-selected="true"]{color:var(--ball)}}
+.toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 16px;border-radius:999px;font-size:13px;z-index:20}
+.confirm{background:color-mix(in srgb,var(--ng) 10%,var(--surface));border:1px solid var(--ng);border-radius:8px;padding:8px;margin-top:6px;font-size:13px;display:grid;gap:6px}
+@media (prefers-reduced-motion:no-preference){.rate button,.chip,.star{transition:background .15s,color .15s}}
+</style>
+
+<header>
+  <div class="wrap">
+    <div class="topbar">
+      <a class="back" href="https://pecpec37-gift.github.io/portal/">← Tommy-Go</a>
+      <span class="date" id="today"></span>
+    </div>
+    <h1>テニス上達チェック</h1>
+    <div class="sub">コートに入る前に確認 → プレー後に ○△× で記録</div>
+    <div class="privacy">🔒 記録はあなたの端末の中だけに保存されます。サーバーへの送信や、ほかの人との共有はされません。</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- チェック -->
+  <section class="view" id="v-check">
+    <div class="core" id="coreBox">
+      <h2><i></i>どのショットでも、これだけは</h2>
+      <div id="coreList"></div>
+    </div>
+
+    <div class="label">今日は</div>
+    <div class="seg" id="modeSeg">
+      <button type="button" data-mode="practice" aria-pressed="true">練習</button>
+      <button type="button" data-mode="match" aria-pressed="false">試合</button>
+    </div>
+
+    <div class="label">チェックするショット</div>
+    <div class="chips" id="catChips"></div>
+
+    <div class="label">今日のテーマ（☆で最大3つ）</div>
+    <div class="focus" id="focusBox"></div>
+
+    <div id="groups"></div>
+
+    <div class="savebox">
+      <div class="summary" id="sum"></div>
+      <label for="memo" style="font-size:13px;color:var(--muted)">気づき・コーチの一言</label>
+      <textarea id="memo" placeholder="例：フォアはネット通過でテイクバック完了できた。サーブはトスが後ろに流れがち"></textarea>
+      <button class="btn" id="saveBtn" type="button">今日の記録を保存</button>
+      <div style="font-size:12px;color:var(--muted);text-align:center">この端末のブラウザにだけ保存されます（ほかの人には見えません）</div>
+      <button class="btn ghost" id="resetBtn" type="button">評価をクリア</button>
+    </div>
+  </section>
+
+  <!-- 記録 -->
+  <section class="view" id="v-log" hidden>
+    <div class="label">これまでの記録</div>
+    <div id="logList"></div>
+  </section>
+
+  <!-- 分析 -->
+  <section class="view" id="v-stats" hidden>
+    <div id="statsBody"></div>
+    <div class="label">バックアップ</div>
+    <div class="io savebox">
+      <div style="font-size:13px;color:var(--muted)">記録はこの端末のブラウザの中だけに保存され、サーバーに送信されたり、ほかの人と共有されたりすることはありません。そのため、別の端末やブラウザからは見えません。機種変更やブラウザのデータ削除で消えるので、ときどき「記録をコピー」で保管してください。</div>
+      <div class="row">
+        <button class="btn ghost" id="expBtn" type="button">記録をコピー</button>
+        <button class="btn ghost" id="impBtn" type="button">貼り付けて復元</button>
+      </div>
+      <textarea id="ioText" placeholder="ここにバックアップの文字列が表示されます／復元するときはここに貼り付け"></textarea>
+    </div>
+  </section>
+</main>
+
+<nav class="tabs" role="tablist">
+  <div class="wrap">
+    <button type="button" role="tab" data-v="check" aria-selected="true"><b>✓</b>チェック</button>
+    <button type="button" role="tab" data-v="log" aria-selected="false"><b>≡</b>記録</button>
+    <button type="button" role="tab" data-v="stats" aria-selected="false"><b>▲</b>分析</button>
+  </div>
+</nav>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const CORE = [
+  {id:"c1",t:"脱力。グリップは10段階で1〜2",h:"打点の瞬間だけ3〜4に握る。強く握るとラケットが走らない"},
+  {id:"c2",t:"相手が打った瞬間に「フォア／バック」",h:"ボールがネットを越える前にテイクバック完了"},
+  {id:"c3",t:"肩を入れて、捻りを戻すスイング",h:"腕は背中から生えている感じ。手打ちしない"},
+  {id:"c4",t:"フォローは最後まで振り切る",h:"テイクバックの大きさよりフォローが大事"},
+  {id:"c5",t:"待っている間も足を止めない",h:"リズムよく動き、スプリットステップ"}
+];
+const CATS = [
+  {id:"short",name:"ショートラリー",items:[
+    ["中指・人差し指・親指で軽く握る","ラケットの重みを感じる。指を働かせる"],
+    ["右足の位置で距離感を確認","毎回同じ打点に合わせる時間にする"],
+    ["テイクバック小さく、ドッグパッドから","「前へならえ」のまま体をひねる"],
+    ["ワイパースイングで山なりに","スイングスピードを落とし、一定のペースで"]
+  ]},
+  {id:"fore",name:"フォア",items:[
+    ["ネット通過でテイクバック完了（台形）","左肩を入れ、左肘の方向にボールが見える"],
+    ["着地でドッグパッド（コの字）","右上腕を外旋し、ラケットを手首より遅らせる"],
+    ["初動ゆっくり、インパクトで加速","頂点から落ち始めたらスイング開始"],
+    ["打点は前、体から離す","体の前にスペースを作る（脇は締める）"],
+    ["インサイドアウト、ボールの内側を打つ","グリップエンドをボールへ向ける"],
+    ["面の向きを変えずに長く運ぶ","打ちたい方向へボール数個分押し出す"],
+    ["フォローで左手を下げない","打ち終わりは左肘の折れ目にフレームタッチ"],
+    ["スピンは手で擦り上げない","ヘッドスピードを止めない。7〜8割の力で丁寧に"]
+  ]},
+  {id:"back",name:"片手バック",items:[
+    ["背中が見えるくらい肩を入れる","左手を添えて目一杯ひねる"],
+    ["刀を抜く感じで、脱力スイング","ラケットは下から振り出す"],
+    ["フォローで体を開かない","肋骨は前を向かない。肩甲骨を開く"],
+    ["スライスは切らない","打点は体の正面、フォローは打ちたい方向へ長く"]
+  ]},
+  {id:"back2",name:"両手バック",items:[
+    ["肩を入れて深くテイクバック","ボールより体が低く入るイメージ"],
+    ["引きつけて、打点はおへその前","視線はボールの模様。打った後も残す"],
+    ["面を押し出して厚く当てる","擦り上げない"],
+    ["体を回し過ぎず、腕をすぐ畳まない","フォローは上方へゆっくり"]
+  ]},
+  {id:"volley",name:"ボレー",items:[
+    ["テイクバック小さく、面の向きを変えない","フォロースルーは長く"],
+    ["手首を使わず、肘主導で振る","寸止めチョップ。腕とラケットが一体"],
+    ["正面を向かず、斜め向きで打つ","正面のまま前で打つとボールが浮く"],
+    ["右足を蹴って前へ（階段を一段降りる）","フォアは左足、バックは右足の着地と打球を合わせる"],
+    ["グリップの高さをボールの高さに","速い球は面を合わせる。迎えに行かず待つ"],
+    ["インパクトの瞬間だけグリップ力UP","ボールを弾かず、吸収して運ぶ"]
+  ]},
+  {id:"serve",name:"サーブ",items:[
+    ["トスは高め、30cm前へ「置く」","左腕は肘を伸ばしたまま上まで。グラつかない"],
+    ["脱力してvictoryポーズで止める","右肘は肩の高さ、L字をキープ"],
+    ["斧を上へ放り投げる（投球フォーム）","肘から担ぎ出す。内旋を意識し過ぎない"],
+    ["厚く当てる。薄いチッは禁止","ラケット先端の少し内側に当てる"],
+    ["左腕は遅めに降ろし、顔を残す","視線は打点に向いたまま"],
+    ["スピンは10時で当てて12時〜1時へ","1時の位置で当てるのではない"],
+    ["80%の力で。力で加減しない","練習通りに振り切る。打った後はリターンに備える"]
+  ]},
+  {id:"return",name:"リターン",items:[
+    ["トスに合わせて一歩前へスプリット","片足で前へ出てからステップ"],
+    ["テイクバック小さく、上半身は1枚の板","腰から上をひねるだけ"],
+    ["後ろ足を蹴って前でインパクト","打つより合わせる。ちょこん当ては×"],
+    ["遅いサーブはバウンドの頂点で","リターンダッシュもしやすい"]
+  ]},
+  {id:"smash",name:"スマッシュ",items:[
+    ["横向きで後ろへ、右足を引く","打点は右前上に来るように"],
+    ["面を上向きのまま上方へ、厚く当てる","コンパクトなスイング（サーブとは別）"],
+    ["頭を前に突っ込まない","迷ったら逆サイドのベースラインへ"]
+  ]}
+];
+CATS.forEach(c=>c.items=c.items.map((x,i)=>({id:c.id+(i+1),t:x[0],h:x[1]})));
+const ITEM = {}; CORE.forEach(i=>ITEM[i.id]={...i,cat:"基本"});
+CATS.forEach(c=>c.items.forEach(i=>ITEM[i.id]={...i,cat:c.name,catId:c.id}));
+const CATNAME = Object.fromEntries(CATS.map(c=>[c.id,c.name]));
+
+const KEY="tennisCheck_v1";
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.logs)return s}catch(e){}return {logs:[],draft:{mode:"practice",cats:["fore","volley","serve"],ratings:{},focus:[],memo:""}}}
+let S=load();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const $=s=>document.querySelector(s);
+const D=()=>S.draft;
+const ymd=d=>`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,"0")}/${String(d.getDate()).padStart(2,"0")}`;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function toast(m){const t=$("#toast");t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,1800)}
+
+$("#today").textContent=ymd(new Date());
+
+function itemHTML(it,isCore){
+  const r=D().ratings[it.id], f=D().focus.includes(it.id);
+  return `<div class="item${isCore?" core-item":""}" data-id="${it.id}">
+    <div class="t">${esc(it.t)}</div>
+    <button type="button" class="star" aria-label="今日のテーマにする" aria-pressed="${f}">${f?"★":"☆"}</button>
+    <div class="h">${esc(it.h)}</div>
+    <div class="rate">${[[2,"○ できた"],[1,"△ 少し"],[0,"× まだ"]].map(([v,l])=>`<button type="button" data-v="${v}" aria-pressed="${r===v}">${l}</button>`).join("")}</div>
+  </div>`;
+}
+function renderCheck(){
+  $("#coreList").innerHTML="";
+  document.querySelectorAll("#modeSeg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.mode===D().mode));
+  $("#catChips").innerHTML=CATS.map(c=>`<button type="button" class="chip" data-cat="${c.id}" aria-pressed="${D().cats.includes(c.id)}">${c.name}<span class="n">${c.items.length}</span></button>`).join("");
+  const fb=$("#focusBox"), fl=D().focus.filter(id=>ITEM[id]);
+  fb.className="focus"+(fl.length?" has":"");
+  fb.innerHTML=fl.length?`<ol>${fl.map(id=>`<li><b>${esc(ITEM[id].t)}</b> <span style="color:var(--muted);font-size:12px">${esc(ITEM[id].cat)}</span></li>`).join("")}</ol>`:`<p>下の項目の☆をタップすると、ここに今日意識することが並びます。</p>`;
+  let html=`<div class="group"><h3>基本 <small>${CORE.length}</small></h3>${CORE.map(i=>itemHTML(i,true)).join("")}</div>`;
+  CATS.filter(c=>D().cats.includes(c.id)).forEach(c=>{html+=`<div class="group"><h3>${c.name} <small>${c.items.length}</small></h3>${c.items.map(i=>itemHTML(i)).join("")}</div>`});
+  $("#groups").innerHTML=html;
+  // コア5か条は上部にも簡潔に
+  $("#coreList").innerHTML=CORE.map(i=>`<div style="font-size:13.5px">・${esc(i.t)}</div>`).join("");
+  $("#memo").value=D().memo||"";
+  renderSum();
+}
+function visibleIds(){return [...CORE.map(i=>i.id),...CATS.filter(c=>D().cats.includes(c.id)).flatMap(c=>c.items.map(i=>i.id))]}
+function renderSum(){
+  const ids=visibleIds(), rated=ids.filter(id=>D().ratings[id]!==undefined);
+  const c=[2,1,0].map(v=>rated.filter(id=>D().ratings[id]===v).length);
+  const sc=rated.length?Math.round(rated.reduce((a,id)=>a+D().ratings[id],0)/(rated.length*2)*100):null;
+  $("#sum").innerHTML=`<span><b>${rated.length}</b>/${ids.length} 評価</span><span class="mk2"><b>${c[0]}</b>○</span><span class="mk1"><b>${c[1]}</b>△</span><span class="mk0"><b>${c[2]}</b>×</span><span><b>${sc===null?"—":sc}</b>点</span>`;
+  $("#saveBtn").disabled=!rated.length;
+}
+$("#modeSeg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;D().mode=b.dataset.mode;save();renderCheck()});
+$("#catChips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;const id=b.dataset.cat,a=D().cats;D().cats=a.includes(id)?a.filter(x=>x!==id):[...a,id];save();renderCheck()});
+$("#groups").addEventListener("click",e=>{
+  const it=e.target.closest(".item");if(!it)return;const id=it.dataset.id;
+  if(e.target.closest(".star")){
+    const f=D().focus;
+    if(f.includes(id))D().focus=f.filter(x=>x!==id);
+    else{if(f.length>=3){toast("テーマは3つまでです");return}f.push(id)}
+    save();renderCheck();return;
+  }
+  const b=e.target.closest(".rate button");if(!b)return;
+  const v=+b.dataset.v;
+  if(D().ratings[id]===v)delete D().ratings[id];else D().ratings[id]=v;
+  it.querySelectorAll(".rate button").forEach(x=>x.setAttribute("aria-pressed",D().ratings[id]===+x.dataset.v));
+  save();renderSum();
+});
+$("#memo").addEventListener("input",e=>{D().memo=e.target.value;save()});
+$("#saveBtn").addEventListener("click",()=>{
+  const ratings={};visibleIds().forEach(id=>{if(D().ratings[id]!==undefined)ratings[id]=D().ratings[id]});
+  const now=new Date();
+  S.logs.push({id:now.getTime(),date:ymd(now),mode:D().mode,ratings,focus:[...D().focus],memo:D().memo||""});
+  D().ratings={};D().memo="";save();renderCheck();renderLog();renderStats();
+  toast("保存しました");window.scrollTo({top:0});
+});
+let resetArm=false;
+$("#resetBtn").addEventListener("click",e=>{
+  if(!resetArm){resetArm=true;e.target.textContent="もう一度タップでクリア";setTimeout(()=>{resetArm=false;e.target.textContent="評価をクリア"},2500);return}
+  resetArm=false;e.target.textContent="評価をクリア";D().ratings={};save();renderCheck();toast("クリアしました");
+});
+
+function scoreOf(l){const v=Object.values(l.ratings);return v.length?Math.round(v.reduce((a,b)=>a+b,0)/(v.length*2)*100):0}
+function renderLog(){
+  const L=[...S.logs].reverse();
+  if(!L.length){$("#logList").innerHTML=`<div class="empty">まだ記録がありません。<br>「チェック」でプレー後に ○△× を付けて保存すると、ここに日付ごとに並びます。</div>`;return}
+  $("#logList").innerHTML=L.map(l=>{
+    const ids=Object.keys(l.ratings);
+    const by=[2,1,0].map(v=>ids.filter(id=>l.ratings[id]===v));
+    const li=(arr,v,m)=>arr.length?`<li class="mk${v}">${m} ${arr.map(id=>esc(ITEM[id]?ITEM[id].t:id)).join("／")}</li>`:"";
+    return `<div class="rec" data-id="${l.id}">
+      <div class="rec-head">
+        <div class="rec-score">${scoreOf(l)}<small>点</small></div>
+        <div class="rec-meta"><span class="d">${l.date}</span><span class="tag${l.mode==="match"?" match":""}">${l.mode==="match"?"試合":"練習"}</span><br>
+        <span class="mk2">○${by[0].length}</span>　<span class="mk1">△${by[1].length}</span>　<span class="mk0">×${by[2].length}</span></div>
+      </div>
+      ${l.focus&&l.focus.length?`<div style="font-size:12.5px;margin-top:6px">★ ${l.focus.map(id=>esc(ITEM[id]?ITEM[id].t:"")+(l.ratings[id]!==undefined?` <span class="mk${l.ratings[id]}">${["×","△","○"][l.ratings[id]]}</span>`:"")).join("／")}</div>`:""}
+      ${l.memo?`<div class="memo">${esc(l.memo)}</div>`:""}
+      <details><summary>項目ごとの評価</summary><ul>${li(by[2],0,"×")}${li(by[1],1,"△")}${li(by[0],2,"○")}</ul>
+      <button type="button" class="del">この記録を削除</button></details>
+    </div>`}).join("");
+}
+$("#logList").addEventListener("click",e=>{
+  const rec=e.target.closest(".rec");if(!rec)return;
+  if(e.target.closest(".del")){
+    if(rec.querySelector(".confirm"))return;
+    const c=document.createElement("div");c.className="confirm";
+    c.innerHTML=`この記録を削除しますか？<div class="row"><button type="button" class="btn danger" data-yes>削除する</button><button type="button" class="btn ghost" data-no>やめる</button></div>`;
+    rec.appendChild(c);return;
+  }
+  if(e.target.closest("[data-no]")){e.target.closest(".confirm").remove();return}
+  if(e.target.closest("[data-yes]")){S.logs=S.logs.filter(l=>String(l.id)!==rec.dataset.id);save();renderLog();renderStats();toast("削除しました")}
+});
+
+function renderStats(){
+  const L=S.logs;
+  if(!L.length){$("#statsBody").innerHTML=`<div class="label">分析</div><div class="empty">記録が2〜3回たまると、点数の推移と「苦手な項目」がここに出ます。</div>`;return}
+  const last=L.slice(-20);
+  const bars=last.map(l=>`<div style="height:${Math.max(scoreOf(l),2)}%" title="${l.date} ${scoreOf(l)}点"></div>`).join("");
+  const avg=Math.round(last.reduce((a,l)=>a+scoreOf(l),0)/last.length);
+  // 項目別（直近10回）
+  const recent=L.slice(-10), agg={};
+  recent.forEach(l=>Object.entries(l.ratings).forEach(([id,v])=>{(agg[id]=agg[id]||{s:0,n:0});agg[id].s+=v;agg[id].n++}));
+  const rows=Object.entries(agg).filter(([id])=>ITEM[id]).map(([id,a])=>({id,pc:Math.round(a.s/(a.n*2)*100),n:a.n})).sort((a,b)=>a.pc-b.pc||b.n-a.n);
+  const col=p=>p>=75?"var(--ok)":p>=45?"var(--mid)":"var(--ng)";
+  const statRow=r=>`<div class="stat"><div class="nm">${esc(ITEM[r.id].t)}<small>${esc(ITEM[r.id].cat)}・${r.n}回評価</small></div><div class="pc" style="color:${col(r.pc)}">${r.pc}%</div><div class="meter"><i style="width:${r.pc}%;background:${col(r.pc)}"></i></div></div>`;
+  const weak=rows.slice(0,5), strong=[...rows].reverse().filter(r=>r.pc>=75).slice(0,3);
+  $("#statsBody").innerHTML=`
+    <div class="label">点数の推移（直近${last.length}回）</div>
+    <div class="trend"><div class="summary" style="margin-bottom:8px"><span>平均 <b>${avg}</b>点</span><span>最新 <b>${scoreOf(L[L.length-1])}</b>点</span><span>通算 <b>${L.length}</b>回</span></div>
+    <div class="bars">${bars}</div><div class="axis"><span>${last[0].date}</span><span>${last[last.length-1].date}</span></div></div>
+    <div class="label">次の課題（直近10回で達成率が低い順）</div>
+    ${weak.map(statRow).join("")}
+    <button type="button" class="btn ghost" id="weakFocus" style="width:100%;margin-top:4px">苦手の上位3つを「今日のテーマ」にする</button>
+    ${strong.length?`<div class="label">身についてきた項目</div>${strong.map(statRow).join("")}`:""}`;
+  $("#weakFocus").onclick=()=>{
+    D().focus=weak.slice(0,3).map(r=>r.id);
+    weak.slice(0,3).forEach(r=>{const c=ITEM[r.id].catId;if(c&&!D().cats.includes(c))D().cats.push(c)});
+    save();renderCheck();showView("check");toast("今日のテーマに設定しました");
+  };
+}
+
+function showView(v){
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.v===v));
+  ["check","log","stats"].forEach(x=>$("#v-"+x).hidden=x!==v);window.scrollTo({top:0});
+}
+document.querySelector("nav.tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(b)showView(b.dataset.v)});
+
+$("#expBtn").addEventListener("click",()=>{
+  const txt=JSON.stringify({logs:S.logs});const ta=$("#ioText");ta.value=txt;
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(()=>toast("コピーしました"),()=>{ta.select();toast("表示された文字列をコピーしてください")})}
+  else{ta.select();toast("表示された文字列をコピーしてください")}
+});
+$("#impBtn").addEventListener("click",()=>{
+  try{const d=JSON.parse($("#ioText").value);if(!Array.isArray(d.logs))throw 0;
+    const have=new Set(S.logs.map(l=>l.id));let n=0;d.logs.forEach(l=>{if(l&&l.ratings&&!have.has(l.id)){S.logs.push(l);n++}});
+    S.logs.sort((a,b)=>a.id-b.id);save();renderLog();renderStats();toast(`${n}件を復元しました`);
+  }catch(e){toast("読み込めませんでした。コピーした文字列を丸ごと貼り付けてください")}
+});
+
+renderCheck();renderLog();renderStats();
+</script>
