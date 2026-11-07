@@ -175,7 +175,7 @@ nav.tabs button[aria-selected="true"]{color:var(--court)}
     <div class="label">チェックするジャンル</div>
     <div class="chips" id="catChips"></div>
 
-    <div class="label">今日のテーマ（☆で最大3つ）</div>
+    <div class="label" id="focusLabel">今日(1回目)のテーマ（☆で最大3つ）</div>
     <div class="focus" id="focusBox"></div>
 
     <div id="groups"></div>
@@ -325,8 +325,10 @@ function renderCheck(){
   $("#groups").innerHTML=html;
   // コア5か条は上部にも簡潔に
   $("#memo").value=D().memo||"";
+  $("#focusLabel").textContent=`今日(${sessionNo()}回目)のテーマ（☆で最大3つ）`;
   renderSum();
 }
+function sessionNo(){const t=ymd(new Date());return S.logs.filter(l=>l.date===t).length+1}
 function visibleIds(){return [...CATS.filter(c=>D().cats.includes(c.id)).flatMap(c=>c.items.map(i=>i.id))]}
 function renderSum(){
   const ids=visibleIds(), rated=ids.filter(id=>D().ratings[id]!==undefined);
@@ -355,9 +357,10 @@ $("#memo").addEventListener("input",e=>{D().memo=e.target.value;save()});
 $("#saveBtn").addEventListener("click",()=>{
   const ratings={};visibleIds().forEach(id=>{if(D().ratings[id]!==undefined)ratings[id]=D().ratings[id]});
   const now=new Date();
-  S.logs.push({id:now.getTime(),date:ymd(now),mode:D().mode,ratings,focus:[...D().focus],memo:D().memo||""});
+  const no=sessionNo();
+  S.logs.push({id:now.getTime(),date:ymd(now),no,mode:D().mode,ratings,focus:[...D().focus],memo:D().memo||""});
   D().ratings={};D().memo="";save();renderCheck();renderLog();renderStats();
-  toast("保存しました");window.scrollTo({top:0});
+  toast(`${no}回目を保存しました。次は${no+1}回目のテーマです`);window.scrollTo({top:0});
 });
 let resetArm=false;
 $("#resetBtn").addEventListener("click",e=>{
@@ -376,7 +379,7 @@ function renderLog(){
     return `<div class="rec" data-id="${l.id}">
       <div class="rec-head">
         <div class="rec-score">${scoreOf(l)}<small>点</small></div>
-        <div class="rec-meta"><span class="d">${l.date}</span><span class="tag${l.mode==="match"?" match":""}">${l.mode==="match"?"試合":"練習"}</span><br>
+        <div class="rec-meta"><span class="d">${l.date}</span>${l.no?`<span class="tag">${l.no}回目</span>`:""}<span class="tag${l.mode==="match"?" match":""}">${l.mode==="match"?"試合":"練習"}</span><br>
         <span class="mk2">○${by[0].length}</span>　<span class="mk1">△${by[1].length}</span>　<span class="mk0">×${by[2].length}</span></div>
       </div>
       ${l.focus&&l.focus.length?`<div style="font-size:15px;margin-top:6px">★ ${l.focus.map(id=>esc(ITEM[id]?ITEM[id].t:"")+(l.ratings[id]!==undefined?` <span class="mk${l.ratings[id]}">${["×","△","○"][l.ratings[id]]}</span>`:"")).join("／")}</div>`:""}
@@ -416,12 +419,12 @@ function renderStats(){
     <div class="bars">${bars}</div><div class="axis"><span>${last[0].date}</span><span>${last[last.length-1].date}</span></div></div>
     <div class="label">次の課題（直近10回で達成率が低い順）</div>
     ${weak.map(statRow).join("")}
-    <button type="button" class="btn ghost" id="weakFocus" style="width:100%;margin-top:4px">苦手の上位3つを「今日のテーマ」にする</button>
+    <button type="button" class="btn ghost" id="weakFocus" style="width:100%;margin-top:4px">苦手の上位3つを次のテーマにする</button>
     ${strong.length?`<div class="label">身についてきた項目</div>${strong.map(statRow).join("")}`:""}`;
   $("#weakFocus").onclick=()=>{
     D().focus=weak.slice(0,3).map(r=>r.id);
     weak.slice(0,3).forEach(r=>{const c=ITEM[r.id].catId;if(c&&!D().cats.includes(c))D().cats.push(c)});
-    save();renderCheck();showView("check");toast("今日のテーマに設定しました");
+    save();renderCheck();showView("check");toast("テーマに設定しました");
   };
 }
 
